@@ -10,7 +10,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 export function ToolCard({ tool }: { tool: ToolConfig }) {
   const Icon = ICON_MAP[tool.icon] || Video;
   return (
-    <Link href={`/tools/${tool.type}`}>
+    <Link href={`/tools/${tool.type.replace(/_/g, "-")}`}>
       <Card className="group h-full cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 border-transparent hover:border-primary/20">
         <CardHeader>
           <div className={`w-12 h-12 rounded-xl ${tool.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>

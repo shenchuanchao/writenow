@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ToolConfig, ToolType } from "@/types";
 import { useGenerate } from "@/hooks/use-generate";
@@ -19,11 +19,18 @@ import ReactMarkdown from "react-markdown";
 export function ToolForm({ tool }: { tool: ToolConfig }) {
   const { result, loading, error, creditsRemaining, generate, reset } = useGenerate();
   const { credits } = useCredits();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
 
   const [prompt, setPrompt] = useState("");
   const [params, setParams] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
+
+  // 生成成功后同步更新全局点数
+  useEffect(() => {
+    if (creditsRemaining !== null && !loading) {
+      refreshProfile();
+    }
+  }, [creditsRemaining, loading, refreshProfile]);
 
   // 计算当前使用的 AI 提示词预览
   const enrichedPrompt = useMemo(() => {
