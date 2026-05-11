@@ -30,7 +30,10 @@ CREATE TRIGGER profiles_updated_at
 
 -- 自动创建 profile
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = ''
+AS $$
 BEGIN
   INSERT INTO public.profiles (id, nickname)
   VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'nickname', 'User'));

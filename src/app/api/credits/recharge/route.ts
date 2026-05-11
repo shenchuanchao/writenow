@@ -31,14 +31,15 @@ export async function POST(request: Request) {
   const balanceBefore = profile.credits;
   const balanceAfter = balanceBefore + pkg.credits;
 
-  // 更新点数
+  // 原子充值（乐观锁）
   const { error: updateError } = await supabase
     .from("profiles")
     .update({ credits: balanceAfter })
-    .eq("id", userId);
+    .eq("id", userId)
+    .eq("credits", balanceBefore);
 
   if (updateError) {
-    return NextResponse.json({ success: false, error: "充值失败" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "充值失败，请重试" }, { status: 500 });
   }
 
   // 写入流水
