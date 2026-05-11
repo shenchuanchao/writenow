@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,24 @@ import { User, Mail, Calendar, Coins, Edit2, Save } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [loading, user, router]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">
+        加载中...
+      </div>
+    );
+  }
+
+  if (!profile) return null;
   const { credits } = useCredits();
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState(profile?.nickname || "");
