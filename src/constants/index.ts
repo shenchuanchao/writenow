@@ -101,7 +101,6 @@ export const CREDIT_PACKAGES = [
   { id: "basic", credits: 20, price: 9.9, label: "基础包", popular: false },
   { id: "pro", credits: 100, price: 39.9, label: "进阶包", popular: true },
   { id: "max", credits: 300, price: 99, label: "顶配套餐", popular: false },
-  { id: "custom", credits: 500, price: 149, label: "自定义", popular: false },
 ];
 
 export const COST_PER_GENERATION = 1;

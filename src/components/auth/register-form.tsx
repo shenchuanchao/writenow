@@ -48,16 +48,13 @@ export function RegisterForm() {
         </div>
         <h3 className="text-lg font-semibold">注册成功！</h3>
         <p className="text-sm text-muted-foreground">
-          我们已向 <span className="font-medium text-foreground">{email}</span> 发送了一封验证邮件，请查收并完成邮箱验证。
+          账号已创建，可以直接登录开始使用。
         </p>
-        <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 text-sm">
-          📬 没收到邮件？请检查垃圾邮件箱，或稍等1-2分钟
-        </div>
         <Link
           href="/login"
           className="inline-flex items-center gap-2 text-primary hover:underline font-medium text-sm"
         >
-          完成验证后，点击这里登录 <ArrowRight className="h-4 w-4" />
+          点击这里登录 <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     );

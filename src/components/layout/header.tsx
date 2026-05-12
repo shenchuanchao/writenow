@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/constants";
-import { Coins, LogOut, Menu, User, X } from "lucide-react";
+import { Coins, LogOut, Menu, ShoppingBag, Shield, User, X } from "lucide-react";
 import { useState } from "react";
 
 export function Header() {
@@ -45,12 +45,25 @@ export function Header() {
                 <Coins className="h-4 w-4" />
                 {profile?.credits ?? 0}
               </div>
+              <Link href="/orders">
+                <Button variant="ghost" size="sm">
+                  <ShoppingBag className="h-4 w-4 mr-1.5" />
+                  订单
+                </Button>
+              </Link>
               <Link href="/profile">
                 <Button variant="ghost" size="sm">
                   <User className="h-4 w-4 mr-1.5" />
                   {profile?.nickname || "个人"}
                 </Button>
               </Link>
+              {profile?.is_admin && (
+                <Link href="/admin/payments">
+                  <Button variant="ghost" size="sm" title="管理后台">
+                    <Shield className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
               <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -94,9 +107,17 @@ export function Header() {
           <div className="pt-3 border-t flex gap-2">
             {user ? (
               <>
+                <Link href="/orders" className="flex-1" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" className="w-full" size="sm"><ShoppingBag className="h-4 w-4 mr-1.5" />订单管理</Button>
+                </Link>
                 <Link href="/profile" className="flex-1" onClick={() => setMobileOpen(false)}>
                   <Button variant="outline" className="w-full" size="sm">个人中心</Button>
                 </Link>
+                {profile?.is_admin && (
+                  <Link href="/admin/payments" className="flex-1" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="w-full" size="sm"><Shield className="h-4 w-4 mr-1.5" />管理后台</Button>
+                  </Link>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => { signOut(); setMobileOpen(false); }}>
                   <LogOut className="h-4 w-4" />
                 </Button>

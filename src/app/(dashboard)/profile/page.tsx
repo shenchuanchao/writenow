@@ -14,12 +14,22 @@ import Link from "next/link";
 export default function ProfilePage() {
   const { user, profile, loading, refreshProfile } = useAuth();
   const router = useRouter();
+  const { credits } = useCredits();
+  const [editing, setEditing] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (profile?.nickname) {
+      setNickname(profile.nickname);
+    }
+  }, [profile?.nickname]);
 
   if (loading) {
     return (
@@ -30,10 +40,6 @@ export default function ProfilePage() {
   }
 
   if (!profile) return null;
-  const { credits } = useCredits();
-  const [editing, setEditing] = useState(false);
-  const [nickname, setNickname] = useState(profile?.nickname || "");
-  const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -46,8 +52,6 @@ export default function ProfilePage() {
     setEditing(false);
     setSaving(false);
   };
-
-  if (!profile) return null;
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">

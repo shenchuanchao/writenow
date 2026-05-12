@@ -40,7 +40,7 @@ function LoginFormInner() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {registered === "true" && (
         <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-sm">
-          ✅ 注册成功！若尚未验证邮箱，请前往收件箱（含垃圾邮件箱）点击验证链接，完成后再登录。
+          ✅ 注册成功！请登录你的账号即可开始使用。
         </div>
       )}
       {error && (

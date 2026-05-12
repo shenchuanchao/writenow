@@ -3,7 +3,7 @@ import { ToolForm } from "@/components/tools/tool-form";
 import { TOOL_CONFIGS } from "@/constants";
 
 export const metadata: Metadata = {
-  title: "朋友圈文案生成 | WriteNow",
+  title: "朋友圈文案生成",
   description: "AI朋友圈文案生成工具，支持日常、旅行、美食、心情、工作等多种场景，提供幽默、文艺、简约等风格",
   keywords: ["朋友圈文案", "朋友圈文字", "微信状态", "心情文案", "朋友圈配文"],
 };
