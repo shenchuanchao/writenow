@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import Link from "next/link";
 
 export default function ProfilePage() {
   const { user, profile, loading, refreshProfile } = useAuth();
-  const router = useRouter();
   const { credits } = useCredits();
   const [editing, setEditing] = useState(false);
   const [nickname, setNickname] = useState("");
@@ -21,9 +19,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login");
+      window.location.href = "/login";
     }
-  }, [loading, user, router]);
+  }, [loading, user]);
 
   useEffect(() => {
     if (profile?.nickname) {

@@ -71,6 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setState({ user: null, profile: null, loading: false });
+    // 整页刷新跳转，确保 httpOnly cookie 在微信等浏览器中正确清除
+    window.location.href = "/login";
   };
 
   return React.createElement(

@@ -68,6 +68,7 @@ export default function AdminPaymentsPage() {
   }, [filter]);
 
   const handleConfirm = async (orderNo: string) => {
+    if (!window.confirm("确认该用户已完成线下支付？此操作将增加用户点数。")) return;
     setConfirming(orderNo);
     try {
       const res = await fetch("/api/admin/payments/confirm", {
