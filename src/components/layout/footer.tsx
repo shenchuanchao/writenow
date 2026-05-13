@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SITE_CONFIG } from "@/constants";
 
 export function Footer() {
@@ -27,10 +28,19 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium mb-3">关于</h4>
-            <p className="text-sm text-muted-foreground">
-              基于先进AI大模型，为内容创作者提供智能文案解决方案。
-            </p>
+            <h4 className="font-medium mb-3">联系我们</h4>
+            <div className="flex items-start gap-3">
+              <Image
+                src="/images/contact-qr.jpg"
+                alt="客服微信"
+                width={100}
+                height={100}
+                className="rounded-md border"
+              />
+              <p className="text-sm text-muted-foreground pt-1">
+                微信扫码添加客服
+              </p>
+            </div>
           </div>
         </div>
         <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
