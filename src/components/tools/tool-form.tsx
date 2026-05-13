@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ToolConfig, ToolType } from "@/types";
 import { useGenerate } from "@/hooks/use-generate";
 import { useCredits } from "@/hooks/use-credits";
+import { getCost } from "@/constants";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "./loading-spinner";
 import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export function ToolForm({ tool }: { tool: ToolConfig }) {
   const { result, loading, error, creditsRemaining, generate, reset } = useGenerate();
@@ -42,16 +44,35 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
     return paramHints ? `[${paramHints}] ${prompt}` : prompt;
   }, [prompt, params, tool.formFields]);
 
+  // 计算本次生成消耗点数
+  const cost = useMemo(() => getCost(tool.type as ToolType, params), [tool.type, params]);
+
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
     await generate(tool.type as ToolType, prompt, params);
   };
 
-  const handleCopy = () => {
-    if (result) {
-      navigator.clipboard.writeText(result);
+  const handleCopy = async () => {
+    if (!result) return;
+    try {
+      // 优先使用 Clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(result);
+      } else {
+        // fallback: 兼容不支持 Clipboard API 的浏览器（如微信内置浏览器）
+        const textArea = document.createElement("textarea");
+        textArea.value = result;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("复制失败:", err);
     }
   };
 
@@ -131,7 +152,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             onClick={handleGenerate}
-            disabled={loading || !prompt.trim() || credits < 1}
+            disabled={loading || !prompt.trim() || credits < cost}
           >
             {loading ? (
               <>
@@ -139,13 +160,13 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4 mr-2" /> 生成文案（消耗 1 点）
+                <Sparkles className="h-4 w-4 mr-2" /> 生成文案（消耗 {cost} 点）
               </>
             )}
           </Button>
 
           {/* No credits warning */}
-          {credits < 1 && (
+          {credits < cost && (
             <div className="p-3 rounded-lg bg-destructive/10 text-center space-y-2">
               <div className="flex items-center justify-center gap-1.5 text-sm text-destructive font-medium">
                 <AlertCircle className="h-4 w-4" />
@@ -227,8 +248,8 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
 
           {/* Result */}
           {result && !loading && (
-            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground/85 prose-li:text-foreground/85 prose-table:text-sm">
-              <ReactMarkdown>{result}</ReactMarkdown>
+            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground/85 prose-li:text-foreground/85 [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-xs [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
             </div>
           )}
 

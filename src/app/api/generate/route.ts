@@ -3,7 +3,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { generateAIResponse } from "@/lib/ai/providers";
 import { buildSystemPrompt } from "@/lib/ai/prompts";
 import { NextResponse } from "next/server";
-import { COST_PER_GENERATION } from "@/constants";
+import { getCost } from "@/constants";
 import type { ToolType } from "@/types";
 
 export async function POST(request: Request) {
@@ -33,14 +33,17 @@ export async function POST(request: Request) {
   const supabase = await createServerSupabase();
   const userId = auth.user!.id;
 
-  // 3. 获取并校验点数
+  // 3. 计算所需点数
+  const cost = getCost(tool_type, params);
+
+  // 4. 获取并校验点数
   const { data: profile } = await supabase
     .from("profiles")
     .select("credits")
     .eq("id", userId)
     .single();
 
-  if (!profile || profile.credits < COST_PER_GENERATION) {
+  if (!profile || profile.credits < cost) {
     return NextResponse.json(
       { success: false, error: "点数不足，请前往充值" },
       { status: 402 }
@@ -49,10 +52,10 @@ export async function POST(request: Request) {
 
   const balanceBefore = profile.credits;
 
-  // 4. 原子扣点（乐观锁）
+  // 5. 原子扣点（乐观锁）
   const { error: deductError } = await supabase
     .from("profiles")
-    .update({ credits: balanceBefore - COST_PER_GENERATION })
+    .update({ credits: balanceBefore - cost })
     .eq("id", userId)
     .eq("credits", balanceBefore);
 
@@ -74,8 +77,8 @@ export async function POST(request: Request) {
       supabase.from("credit_transactions").insert({
         user_id: userId,
         type: "refund",
-        amount: COST_PER_GENERATION,
-        balance_before: balanceBefore - COST_PER_GENERATION,
+        amount: cost,
+        balance_before: balanceBefore - cost,
         balance_after: balanceBefore,
         description: `AI 调用失败: ${errMsg}`,
       }),
@@ -84,14 +87,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: errMsg }, { status: 500 });
   }
 
-  const balanceAfter = balanceBefore - COST_PER_GENERATION;
+  const balanceAfter = balanceBefore - cost;
 
-  // 6. 并行写入流水 + 历史记录
+  // 7. 并行写入流水 + 历史记录
   await Promise.all([
     supabase.from("credit_transactions").insert({
       user_id: userId,
       type: "spend",
-      amount: COST_PER_GENERATION,
+      amount: cost,
       balance_before: balanceBefore,
       balance_after: balanceAfter,
       description: `使用${tool_type}生成文案`,

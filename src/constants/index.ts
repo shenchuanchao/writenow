@@ -1,4 +1,4 @@
-import { ToolConfig } from "@/types";
+import { ToolConfig, ToolType } from "@/types";
 
 export const TOOL_CONFIGS: Record<string, ToolConfig> = {
   video_script: {
@@ -102,6 +102,16 @@ export const CREDIT_PACKAGES = [
   { id: "pro", credits: 100, price: 39.9, label: "进阶包", popular: true },
   { id: "max", credits: 300, price: 99, label: "顶配套餐", popular: false },
 ];
+
+export function getCost(toolType: ToolType, params?: Record<string, unknown>): number {
+  if (toolType === "video_script") {
+    const duration = params?.duration as string | undefined;
+    if (duration === "60") return 2;
+    if (duration === "180") return 5;
+    return 1; // default 30s
+  }
+  return 1;
+}
 
 export const COST_PER_GENERATION = 1;
 export const PAGE_SIZE = 20;
