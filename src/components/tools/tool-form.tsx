@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "./loading-spinner";
-import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight } from "lucide-react";
+import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight, LogIn } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -151,12 +151,16 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
           {/* Generate button */}
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-            onClick={handleGenerate}
-            disabled={loading || !prompt.trim() || credits < cost}
+            onClick={user ? handleGenerate : () => (window.location.href = "/login")}
+            disabled={loading || (!user ? false : !prompt.trim() || credits < cost)}
           >
             {loading ? (
               <>
                 <LoadingSpinner className="mr-2" /> 生成中...
+              </>
+            ) : !user ? (
+              <>
+                <LogIn className="h-4 w-4 mr-2" /> 登录后生成
               </>
             ) : (
               <>
@@ -166,7 +170,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
           </Button>
 
           {/* No credits warning */}
-          {credits < cost && (
+          {user && credits < cost && (
             <div className="p-3 rounded-lg bg-destructive/10 text-center space-y-2">
               <div className="flex items-center justify-center gap-1.5 text-sm text-destructive font-medium">
                 <AlertCircle className="h-4 w-4" />
