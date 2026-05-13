@@ -135,8 +135,8 @@ export default function AdminPaymentsPage() {
           {orders.map((order) => (
             <Card key={order.id}>
               <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-4 min-w-0">
                     {/* 状态图标 */}
                     {order.status === "pending" ? (
                       <Clock className="h-5 w-5 text-amber-500 shrink-0" />
@@ -147,7 +147,7 @@ export default function AdminPaymentsPage() {
                     )}
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-sm">{order.order_no}</span>
+                        <span className="font-mono text-sm truncate max-w-[180px] sm:max-w-none">{order.order_no}</span>
                         <Badge
                           variant={order.status === "pending" ? "secondary" : "default"}
                           className="text-xs"
@@ -174,7 +174,7 @@ export default function AdminPaymentsPage() {
                   {order.status === "pending" && (
                     <Button
                       size="sm"
-                      className="shrink-0"
+                      className="w-full sm:w-auto shrink-0"
                       disabled={confirming === order.order_no}
                       onClick={() => handleConfirm(order.order_no)}
                     >

@@ -30,8 +30,9 @@ function LoginFormInner() {
       return;
     }
 
+    // 用 window.location.href 强制整页刷新，确保 httpOnly cookie 在微信等浏览器中正确写入
     const redirect = searchParams.get("redirect") || "/";
-    router.push(redirect);
+    window.location.href = redirect;
   };
 
   const registered = searchParams.get("registered");
