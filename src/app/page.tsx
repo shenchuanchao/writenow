@@ -60,6 +60,28 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="container mx-auto px-4 py-20">
+        <h2 className="text-2xl font-bold text-center mb-10">工具效果示例</h2>
+        <div className="grid sm:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="space-y-3">
+            <img
+              src="/images/video-script-demo.png"
+              alt="短视频脚本生成效果"
+              className="rounded-xl border shadow-sm w-full object-cover"
+            />
+            <p className="text-center text-sm text-muted-foreground">短视频脚本生成</p>
+          </div>
+          <div className="space-y-3">
+            <img
+              src="/images/xiaohongshu-demo.png"
+              alt="小红书文案效果"
+              className="rounded-xl border shadow-sm w-full object-cover"
+            />
+            <p className="text-center text-sm text-muted-foreground">小红书文案生成</p>
+          </div>
+        </div>
+      </section>
+
       <section className="container mx-auto px-4 py-20 text-center">
         <h2 className="text-3xl font-bold mb-4">准备好开始了吗？</h2>
         <p className="text-muted-foreground mb-8">注册即送20点免费额度，立即体验AI文案的魅力</p>
