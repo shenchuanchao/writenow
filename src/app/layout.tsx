@@ -11,9 +11,9 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://writenow.vercel.app"),
-  title: { default: "WriteNow - AI文案生成平台", template: "%s | WriteNow" },
+  title: { default: "WriteNow - AI文案生成平台｜短视频脚本｜小红书文案｜电商标题", template: "%s | WriteNow" },
   description: "AI驱动的一站式文案生成平台，支持短视频脚本、小红书文案、电商标题、朋友圈文案生成，免费在线使用",
-  keywords: ["AI文案", "文案生成", "短视频脚本", "小红书文案", "电商标题", "朋友圈文案", "AI写作", "智能文案", "内容创作"],
+  keywords: ["AI文案工具", "文案生成", "短视频脚本", "小红书文案", "电商标题", "朋友圈文案", "AI写作工具", "智能文案", "内容创作"],
   authors: [{ name: "WriteNow" }],
   openGraph: {
     type: "website",
