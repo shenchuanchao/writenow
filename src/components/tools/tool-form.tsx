@@ -52,6 +52,19 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
     }
   }, [creditsRemaining, loading, refreshProfile]);
 
+  // 页面加载时从服务器读取游客剩余次数
+  useEffect(() => {
+    if (user || !deviceId) return;
+    fetch(`/api/guest/quota?device_id=${encodeURIComponent(deviceId)}`)
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          setInitialGuestRemaining(json.data.remaining);
+        }
+      })
+      .catch(() => {});
+  }, [deviceId, user]);
+
   // 计算当前使用的 AI 提示词预览
   const enrichedPrompt = useMemo(() => {
     if (!prompt.trim()) return "";
