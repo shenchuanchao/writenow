@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "WriteNow",
     title: "WriteNow - AI智能文案生成平台",
     description: "AI驱动的一站式文案生成平台，每天5次免费使用，支持短视频脚本、小红书文案、电商标题、朋友圈文案生成",
-    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "/public/logo.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
