@@ -3,9 +3,13 @@ import { ToolForm } from "@/components/tools/tool-form";
 import { TOOL_CONFIGS } from "@/constants";
 
 export const metadata: Metadata = {
-  title: "朋友圈文案生成",
-  description: "AI朋友圈文案生成工具，支持日常、旅行、美食、心情、工作等多种场景，提供幽默、文艺、简约等风格",
-  keywords: ["朋友圈文案", "朋友圈文字", "微信状态", "心情文案", "朋友圈配文"],
+  title: "朋友圈文案自动生成器 — 圈粉好文AI创作",
+  description: "免费AI朋友圈文案生成工具，覆盖日常、旅行、美食、心情、工作等多种场景。支持幽默搞笑、文艺清新、简约日常等风格，让你的动态更有趣，每天5次免费使用。",
+  keywords: ["朋友圈文案生成器", "微信朋友圈文案", "朋友圈配文神器", "心情文案自动生成", "朋友圈文字灵感", "微信状态文案"],
+  openGraph: {
+    title: "朋友圈文案自动生成器 | WriteNow",
+    description: "免费AI朋友圈文案生成工具，多场景多风格，让你的动态更有趣",
+  },
 };
 
 export default function Page() {
