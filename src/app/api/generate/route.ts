@@ -1,4 +1,3 @@
-import { requireAuth } from "@/lib/auth/guard";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { generateAIResponse } from "@/lib/ai/providers";
 import { buildSystemPrompt } from "@/lib/ai/prompts";
@@ -6,12 +5,12 @@ import { NextResponse } from "next/server";
 import { getCost } from "@/constants";
 import type { ToolType } from "@/types";
 
-export async function POST(request: Request) {
-  // 1. 鉴权
-  const auth = await requireAuth();
-  if (auth.error) return auth.error;
+const GUEST_DAILY_LIMIT = 5;
 
-  // 2. 解析请求
+export async function POST(request: Request) {
+  const supabase = await createServerSupabase();
+
+  // 1. 解析请求
   let body: { tool_type: ToolType; prompt: string; params?: Record<string, unknown> };
   try {
     body = await request.json();
@@ -30,8 +29,77 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: `不支持的工具类型: ${tool_type}` }, { status: 400 });
   }
 
-  const supabase = await createServerSupabase();
-  const userId = auth.user!.id;
+  // 2. 判断是否登录
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // ==============================
+  // 游客分支
+  // ==============================
+  if (!user) {
+    const deviceId = request.headers.get("x-device-id");
+    if (!deviceId) {
+      return NextResponse.json({ success: false, error: "缺少设备标识" }, { status: 400 });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || request.headers.get("x-real-ip")
+      || "unknown";
+
+    // 查询当日已用次数
+    const { data: quota, error: quotaError } = await supabase
+      .from("guest_daily_quota")
+      .select("used_count")
+      .eq("device_id", deviceId)
+      .eq("quota_date", today)
+      .maybeSingle();
+
+    if (quotaError) {
+      return NextResponse.json({ success: false, error: "配额查询失败" }, { status: 500 });
+    }
+
+    const used = quota?.used_count ?? 0;
+
+    if (used >= GUEST_DAILY_LIMIT) {
+      return NextResponse.json(
+        { success: false, error: "今日免费次数已用完，登录后可获得更多点数" },
+        { status: 403 }
+      );
+    }
+
+    // 调用 AI
+    let result: string;
+    try {
+      const systemPrompt = buildSystemPrompt(tool_type, params);
+      result = await generateAIResponse(prompt, systemPrompt);
+    } catch (aiError) {
+      const errMsg = aiError instanceof Error ? aiError.message : "AI 生成失败";
+      return NextResponse.json({ success: false, error: errMsg }, { status: 500 });
+    }
+
+    // 写入配额
+    await supabase.from("guest_daily_quota").upsert(
+      {
+        device_id: deviceId,
+        quota_date: today,
+        used_count: used + 1,
+        last_ip: ip,
+      },
+      { onConflict: "device_id,quota_date" }
+    );
+
+    const remaining = GUEST_DAILY_LIMIT - (used + 1);
+
+    return NextResponse.json({
+      success: true,
+      data: { result, guest_remaining: remaining },
+    });
+  }
+
+  // ==============================
+  // 已登录用户分支（原逻辑不变）
+  // ==============================
+  const userId = user.id;
 
   // 3. 计算所需点数
   const cost = getCost(tool_type, params);
@@ -63,7 +131,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "扣点失败，请重试" }, { status: 500 });
   }
 
-  // 5. 调用 AI（含用户参数）
+  // 6. 调用 AI（含用户参数）
   let result: string;
   try {
     const systemPrompt = buildSystemPrompt(tool_type, params);

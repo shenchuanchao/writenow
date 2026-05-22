@@ -14,20 +14,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "./loading-spinner";
-import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight, LogIn } from "lucide-react";
+import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight, LogIn, Gift } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+const GUEST_DAILY_LIMIT = 5;
+const DEVICE_ID_KEY = "writenow_device_id";
+
+function getOrCreateDeviceId(): string {
+  if (typeof window === "undefined") return "";
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+}
+
 export function ToolForm({ tool }: { tool: ToolConfig }) {
-  const { result, loading, error, creditsRemaining, generate, reset } = useGenerate();
+  const { result, loading, error, creditsRemaining, guestRemaining, generate, reset } = useGenerate();
   const { credits } = useCredits();
   const { user, refreshProfile } = useAuth();
 
   const [prompt, setPrompt] = useState("");
   const [params, setParams] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
+  const [deviceId] = useState(() => getOrCreateDeviceId());
 
-  // 生成成功后同步更新全局点数
+  // 游客剩余次数：优先用 API 返回的最新值，否则用初始值 5
+  const [initialGuestRemaining, setInitialGuestRemaining] = useState<number>(GUEST_DAILY_LIMIT);
+  const displayGuestRemaining = guestRemaining ?? initialGuestRemaining;
+
+  // 生成成功后同步更新全局点数 / 游客次数
   useEffect(() => {
     if (creditsRemaining !== null && !loading) {
       refreshProfile();
@@ -44,22 +62,20 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
     return paramHints ? `[${paramHints}] ${prompt}` : prompt;
   }, [prompt, params, tool.formFields]);
 
-  // 计算本次生成消耗点数
+  // 计算本次生成消耗点数（仅已登录用户）
   const cost = useMemo(() => getCost(tool.type as ToolType, params), [tool.type, params]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
-    await generate(tool.type as ToolType, prompt, params);
+    await generate(tool.type as ToolType, prompt, params, user ? undefined : deviceId);
   };
 
   const handleCopy = async () => {
     if (!result) return;
     try {
-      // 优先使用 Clipboard API
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(result);
       } else {
-        // fallback: 兼容不支持 Clipboard API 的浏览器（如微信内置浏览器）
         const textArea = document.createElement("textarea");
         textArea.value = result;
         textArea.style.position = "fixed";
@@ -76,6 +92,14 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
     }
   };
 
+  // 游客是否已用完
+  const guestExhausted = !user && displayGuestRemaining <= 0;
+
+  // 生成按钮是否禁用
+  const generateDisabled = loading
+    || (user && (!prompt.trim() || credits < cost))
+    || (!user && (!prompt.trim() || guestExhausted));
+
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* ====== Input Panel ====== */}
@@ -84,8 +108,17 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
           <CardTitle className="flex items-center gap-2 text-lg">
             参数设置
             <Badge variant="secondary" className="ml-auto">
-              <Coins className="h-3 w-3 mr-1" />
-              {credits}
+              {user ? (
+                <>
+                  <Coins className="h-3 w-3 mr-1" />
+                  {credits}
+                </>
+              ) : (
+                <>
+                  <Gift className="h-3 w-3 mr-1" />
+                  今日 {displayGuestRemaining}/5 次
+                </>
+              )}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -151,8 +184,8 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
           {/* Generate button */}
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-            onClick={user ? handleGenerate : () => (window.location.href = "/login")}
-            disabled={loading || (!user ? false : !prompt.trim() || credits < cost)}
+            onClick={handleGenerate}
+            disabled={generateDisabled}
           >
             {loading ? (
               <>
@@ -160,7 +193,8 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
               </>
             ) : !user ? (
               <>
-                <LogIn className="h-4 w-4 mr-2" /> 登录后生成
+                <Sparkles className="h-4 w-4 mr-2" />
+                免费生成（剩余 {displayGuestRemaining} 次）
               </>
             ) : (
               <>
@@ -169,31 +203,39 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
             )}
           </Button>
 
-          {/* No credits warning */}
+          {/* Guest exhausted warning */}
+          {guestExhausted && (
+            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-center space-y-2">
+              <div className="flex items-center justify-center gap-1.5 text-sm text-amber-700 dark:text-amber-400 font-medium">
+                <AlertCircle className="h-4 w-4" />
+                今日免费次数已用完
+              </div>
+              <p className="text-xs text-muted-foreground">登录后获得更多点数，无限畅用</p>
+              <Link href="/login?redirect=/tools/video-script">
+                <Button variant="outline" size="sm" className="w-full">
+                  <LogIn className="h-3.5 w-3.5 mr-1" /> 登录 / 注册
+                </Button>
+              </Link>
+            </div>
+          )}
+
+          {/* No credits warning (logged in only) */}
           {user && credits < cost && (
             <div className="p-3 rounded-lg bg-destructive/10 text-center space-y-2">
               <div className="flex items-center justify-center gap-1.5 text-sm text-destructive font-medium">
                 <AlertCircle className="h-4 w-4" />
                 点数不足，无法生成
               </div>
-              {user ? (
-                <Link href="/recharge">
-                  <Button variant="outline" size="sm" className="w-full">
-                    去充值 <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/login">
-                  <Button variant="outline" size="sm" className="w-full">
-                    登录后充值 <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                  </Button>
-                </Link>
-              )}
+              <Link href="/recharge">
+                <Button variant="outline" size="sm" className="w-full">
+                  去充值 <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                </Button>
+              </Link>
             </div>
           )}
 
-          {/* Credits remaining after success */}
-          {creditsRemaining !== null && (
+          {/* Credits remaining after success (logged in) */}
+          {user && creditsRemaining !== null && (
             <p className="text-xs text-center text-muted-foreground">
               剩余点数：<span className="font-medium text-foreground">{creditsRemaining}</span>
             </p>
@@ -202,7 +244,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
       </Card>
 
       {/* ====== Result Panel ====== */}
-      <Card className="lg:col-span-2">
+      <Card className="lg:col-span-2 overflow-hidden min-w-0">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">生成结果</CardTitle>
           {result && (
@@ -240,7 +282,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
                 生成失败
               </div>
               <p className="text-sm text-destructive/80">{error}</p>
-              {error.includes("点数不足") && user && (
+              {user && error.includes("点数不足") && (
                 <Link href="/recharge">
                   <Button variant="outline" size="sm" className="mt-1">
                     去充值 <ArrowRight className="h-3.5 w-3.5 ml-1" />
@@ -252,7 +294,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
 
           {/* Result */}
           {result && !loading && (
-            <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground/85 prose-li:text-foreground/85 [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-xs [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
+            <div className="prose prose-sm dark:prose-invert max-w-none overflow-x-auto break-words prose-headings:text-foreground prose-p:text-foreground/85 prose-li:text-foreground/85 [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-xs [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
             </div>
           )}
