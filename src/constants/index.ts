@@ -31,12 +31,17 @@ export const TOOL_CONFIGS: Record<string, ToolConfig> = {
     color: "bg-rose-500",
     placeholder: "请描述你要分享的内容或产品...",
     formFields: [
-      { name: "topic", label: "分享主题", type: "text", placeholder: "如：夏日防晒好物", required: true },
+      { name: "topic", label: "分享主题", type: "text", placeholder: "如：夏日防晒好物" },
       { name: "tone", label: "语气风格", type: "select", options: [
         { value: "casual", label: "日常随意" },
+        { value: "recommend", label: "好物种草" },
         { value: "professional", label: "专业测评" },
         { value: "cute", label: "可爱软萌" },
         { value: "emotional", label: "情感共鸣" },
+        { value: "informative", label: "干货科普" },
+        { value: "story", label: "经验分享" },
+        { value: "warn", label: "避坑指南" },
+        { value: "enthusiastic", label: "激情感召" },
       ]},
       { name: "hashtags", label: "是否带话题标签", type: "select", options: [
         { value: "yes", label: "是" },
@@ -88,12 +93,15 @@ export const TOOL_CONFIGS: Record<string, ToolConfig> = {
 
 export const SITE_CONFIG = {
   name: "WriteNow",
-  description: "一站式 AI 文案工具平台",
+  description: "免费小红书文案生成器 — 种草笔记·好物分享·爆款标题一键生成",
   navLinks: [
-    { href: "/tools/video-script", label: "短视频脚本" },
     { href: "/tools/xiaohongshu", label: "小红书" },
-    { href: "/tools/ecommerce", label: "电商标题" },
     { href: "/tools/moments", label: "朋友圈" },
+    { href: "/templates", label: "热门模板" },
+  ],
+  moreTools: [
+    { href: "/tools/video-script", label: "短视频脚本" },
+    { href: "/tools/ecommerce", label: "电商标题" },
   ],
 };
 

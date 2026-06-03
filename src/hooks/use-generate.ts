@@ -8,7 +8,7 @@ interface UseGenerateReturn {
   loading: boolean;
   error: string | null;
   creditsRemaining: number | null;
-  guestRemaining: number | null;
+  guestUnlimited: boolean;
   generate: (toolType: ToolType, prompt: string, params?: Record<string, unknown>, deviceId?: string) => Promise<void>;
   reset: () => void;
 }
@@ -18,7 +18,7 @@ export function useGenerate(): UseGenerateReturn {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
-  const [guestRemaining, setGuestRemaining] = useState<number | null>(null);
+  const [guestUnlimited, setGuestUnlimited] = useState(false);
 
   const generate = useCallback(
     async (toolType: ToolType, prompt: string, params?: Record<string, unknown>, deviceId?: string) => {
@@ -48,7 +48,7 @@ export function useGenerate(): UseGenerateReturn {
 
         setResult(json.data.result);
         setCreditsRemaining(json.data.credits_remaining ?? null);
-        setGuestRemaining(json.data.guest_remaining ?? null);
+        setGuestUnlimited(json.data.guest_unlimited === true);
       } catch (e) {
         const msg = e instanceof Error ? e.message : "生成失败，请重试";
         setError(msg);
@@ -65,5 +65,5 @@ export function useGenerate(): UseGenerateReturn {
     setLoading(false);
   }, []);
 
-  return { result, loading, error, creditsRemaining, guestRemaining, generate, reset };
+  return { result, loading, error, creditsRemaining, guestUnlimited, generate, reset };
 }

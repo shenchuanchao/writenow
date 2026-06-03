@@ -14,11 +14,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { LoadingSpinner } from "./loading-spinner";
-import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight, LogIn, Gift } from "lucide-react";
+import { AlertCircle, Sparkles, Copy, Check, Coins, RefreshCw, Dices, ArrowRight, Info } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-const GUEST_DAILY_LIMIT = 5;
 const DEVICE_ID_KEY = "writenow_device_id";
 
 function getOrCreateDeviceId(): string {
@@ -31,39 +30,22 @@ function getOrCreateDeviceId(): string {
   return id;
 }
 
-export function ToolForm({ tool }: { tool: ToolConfig }) {
-  const { result, loading, error, creditsRemaining, guestRemaining, generate, reset } = useGenerate();
+export function ToolForm({ tool, initialPrompt, initialParams }: { tool: ToolConfig; initialPrompt?: string; initialParams?: Record<string, string> }) {
+  const { result, loading, error, creditsRemaining, guestUnlimited, generate, reset } = useGenerate();
   const { credits } = useCredits();
   const { user, refreshProfile } = useAuth();
 
-  const [prompt, setPrompt] = useState("");
-  const [params, setParams] = useState<Record<string, string>>({});
+  const [prompt, setPrompt] = useState(initialPrompt || "");
+  const [params, setParams] = useState<Record<string, string>>(initialParams || {});
   const [copied, setCopied] = useState(false);
   const [deviceId] = useState(() => getOrCreateDeviceId());
 
-  // 游客剩余次数：优先用 API 返回的最新值，否则用初始值 5
-  const [initialGuestRemaining, setInitialGuestRemaining] = useState<number>(GUEST_DAILY_LIMIT);
-  const displayGuestRemaining = guestRemaining ?? initialGuestRemaining;
-
-  // 生成成功后同步更新全局点数 / 游客次数
+  // 生成成功后同步更新全局点数
   useEffect(() => {
     if (creditsRemaining !== null && !loading) {
       refreshProfile();
     }
   }, [creditsRemaining, loading, refreshProfile]);
-
-  // 页面加载时从服务器读取游客剩余次数
-  useEffect(() => {
-    if (user || !deviceId) return;
-    fetch(`/api/guest/quota?device_id=${encodeURIComponent(deviceId)}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json.success) {
-          setInitialGuestRemaining(json.data.remaining);
-        }
-      })
-      .catch(() => {});
-  }, [deviceId, user]);
 
   // 计算当前使用的 AI 提示词预览
   const enrichedPrompt = useMemo(() => {
@@ -86,32 +68,41 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
   const handleCopy = async () => {
     if (!result) return;
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+      // 优先 Clipboard API，移动端可能因非 HTTPS 或权限静默失败
+      if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(result);
       } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = result;
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
+        fallbackCopy(result);
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("复制失败:", err);
+    } catch {
+      // Clipboard API 失败 → 走传统 execCommand 兜底
+      try {
+        fallbackCopy(result);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("复制失败:", err);
+      }
     }
   };
 
-  // 游客是否已用完
-  const guestExhausted = !user && displayGuestRemaining <= 0;
-
-  // 生成按钮是否禁用
-  const generateDisabled = loading
-    || (user && (!prompt.trim() || credits < cost))
-    || (!user && (!prompt.trim() || guestExhausted));
+  const fallbackCopy = (text: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+    textArea.style.opacity = "0";
+    textArea.style.pointerEvents = "none";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, text.length);
+    document.execCommand("copy");
+    document.body.removeChild(textArea);
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -127,10 +118,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
                   {credits}
                 </>
               ) : (
-                <>
-                  <Gift className="h-3 w-3 mr-1" />
-                  今日 {displayGuestRemaining}/5 次
-                </>
+                "免费无限次"
               )}
             </Badge>
           </CardTitle>
@@ -198,7 +186,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
           <Button
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             onClick={handleGenerate}
-            disabled={generateDisabled}
+            disabled={loading || (user && (!prompt.trim() || credits < cost)) || (!user && !prompt.trim())}
           >
             {loading ? (
               <>
@@ -207,7 +195,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
             ) : !user ? (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
-                免费生成（剩余 {displayGuestRemaining} 次）
+                免费生成
               </>
             ) : (
               <>
@@ -216,19 +204,13 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
             )}
           </Button>
 
-          {/* Guest exhausted warning */}
-          {guestExhausted && (
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-center space-y-2">
-              <div className="flex items-center justify-center gap-1.5 text-sm text-amber-700 dark:text-amber-400 font-medium">
-                <AlertCircle className="h-4 w-4" />
-                今日免费次数已用完
+          {/* Guest info */}
+          {!user && (
+            <div className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30">
+              <div className="flex items-center gap-1.5 text-xs text-blue-700 dark:text-blue-400">
+                <Info className="h-3.5 w-3.5 flex-shrink-0" />
+                游客版 · 免费无限次 · 输出约 300 字
               </div>
-              <p className="text-xs text-muted-foreground">登录后获得更多点数，无限畅用</p>
-              <Link href="/login?redirect=/tools/video-script">
-                <Button variant="outline" size="sm" className="w-full">
-                  <LogIn className="h-3.5 w-3.5 mr-1" /> 登录 / 注册
-                </Button>
-              </Link>
             </div>
           )}
 
@@ -270,7 +252,7 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
                 )}
                 {copied ? "已复制" : "复制"}
               </Button>
-              <Button variant="ghost" size="sm" onClick={reset}>
+              <Button variant="ghost" size="sm" onClick={handleGenerate} disabled={loading}>
                 <RefreshCw className="h-4 w-4 mr-1" /> 重新生成
               </Button>
             </div>
@@ -301,6 +283,11 @@ export function ToolForm({ tool }: { tool: ToolConfig }) {
                     去充值 <ArrowRight className="h-3.5 w-3.5 ml-1" />
                   </Button>
                 </Link>
+              )}
+              {!user && error.includes("过于频繁") && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  每小时 60 次，下一整点后自动恢复
+                </p>
               )}
             </div>
           )}

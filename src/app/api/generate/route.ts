@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 import { getCost } from "@/constants";
 import type { ToolType } from "@/types";
 
-const GUEST_DAILY_LIMIT = 5;
+const GUEST_RATE_LIMIT = 60; // 每小时
+const GUEST_MAX_OUTPUT_CHARS = 300;
 
 export async function POST(request: Request) {
   const supabase = await createServerSupabase();
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // ==============================
-  // 游客分支
+  // 游客分支（无限免费版 + 速率限制）
   // ==============================
   if (!user) {
     const deviceId = request.headers.get("x-device-id");
@@ -41,33 +42,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "缺少设备标识" }, { status: 400 });
     }
 
-    const today = new Date().toISOString().slice(0, 10);
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || request.headers.get("x-real-ip")
       || "unknown";
 
-    // 查询当日已用次数
-    const { data: quota, error: quotaError } = await supabase
-      .from("guest_daily_quota")
-      .select("used_count")
-      .eq("device_id", deviceId)
-      .eq("quota_date", today)
-      .maybeSingle();
+    // === 速率限制：每小时 60 次 ===
+    const hourBucket = new Date().toISOString().slice(0, 13); // "2026-06-03T15"
 
-    if (quotaError) {
-      return NextResponse.json({ success: false, error: "配额查询失败" }, { status: 500 });
+    try {
+      const { data: rateRow, error: rateError } = await supabase
+        .from("rate_limits")
+        .select("count")
+        .eq("device_id", deviceId)
+        .eq("hour_bucket", hourBucket)
+        .maybeSingle();
+
+      if (rateError) {
+        // 表不存在等非关键错误 → 记录日志但跳过快照限制
+        console.error("[rate_limits] query error:", rateError.message);
+      } else {
+        const currentCount = rateRow?.count ?? 0;
+
+        if (currentCount >= GUEST_RATE_LIMIT) {
+          return NextResponse.json(
+            { success: false, error: "使用过于频繁，请稍后再试（每小时 60 次）" },
+            { status: 429 }
+          );
+        }
+
+        // 递增速率计数器
+        await supabase.from("rate_limits").upsert(
+          {
+            device_id: deviceId,
+            hour_bucket: hourBucket,
+            count: currentCount + 1,
+            last_ip: ip,
+          },
+          { onConflict: "device_id,hour_bucket" }
+        );
+      }
+    } catch (err) {
+      // 极端情况下 skip 降级
+      console.error("[rate_limits] unexpected error:", err);
     }
 
-    const used = quota?.used_count ?? 0;
-
-    if (used >= GUEST_DAILY_LIMIT) {
-      return NextResponse.json(
-        { success: false, error: "今日免费次数已用完，登录后可获得更多点数" },
-        { status: 403 }
-      );
-    }
-
-    // 调用 AI
+    // === 调用 AI（游客基础版：字数限制） ===
     let result: string;
     try {
       const systemPrompt = buildSystemPrompt(tool_type, params);
@@ -77,22 +96,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: errMsg }, { status: 500 });
     }
 
-    // 写入配额
-    await supabase.from("guest_daily_quota").upsert(
-      {
-        device_id: deviceId,
-        quota_date: today,
-        used_count: used + 1,
-        last_ip: ip,
-      },
-      { onConflict: "device_id,quota_date" }
-    );
-
-    const remaining = GUEST_DAILY_LIMIT - (used + 1);
+    // 截断至 300 字
+    if (result.length > GUEST_MAX_OUTPUT_CHARS) {
+      result = result.slice(0, GUEST_MAX_OUTPUT_CHARS).replace(/\s+\S*$/, "") + "...";
+    }
 
     return NextResponse.json({
       success: true,
-      data: { result, guest_remaining: remaining },
+      data: { result, guest_unlimited: true },
     });
   }
 

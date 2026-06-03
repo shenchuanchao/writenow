@@ -34,23 +34,27 @@ const PROMPT_BUILDERS: Record<ToolType, PromptBuilder> = {
     const withTags = params?.hashtags !== "no";
     const toneLabel: Record<string, string> = {
       casual: "日常随意，像和朋友聊天",
+      recommend: "直接种草推荐，突出好物亮点和使用体验",
       professional: "专业测评，用数据和体验说话",
       cute: "可爱软萌，多用拟声词和可爱 emoji",
       emotional: "情感共鸣，讲故事引发共情",
+      informative: "干货科普，提供实用知识和技巧",
+      story: "经验分享，讲自己的真实经历和心得",
+      warn: "避坑指南，指出常见雷区和注意事项",
+      enthusiastic: "激情感召，充满热情和号召力",
     };
 
-    return `你是一个小红书资深博主。请根据用户的需求生成小红书风格笔记文案。
+    return `你是一个小红书资深博主。请生成小红书风格笔记文案。
 
-当前配置：
-- 语气风格：${toneLabel[tone as string] || tone}
-- ${withTags ? "需要" : "不需要"}话题标签
+风格：${toneLabel[tone as string] || tone}
+${withTags ? "需要5-8个话题标签" : "不需要话题标签"}
 
-输出格式要求（用 Markdown）：
-1. **标题**（emoji 开头，吸引点击，20字以内）
-2. **正文**（分段落，适当使用 emoji，语气：${toneLabel[tone as string] || tone}）
-${withTags ? '3. **#话题标签**（5-8个相关标签）' : ''}
+输出格式（用 Markdown）：
+1. **标题**（emoji开头，20字以内，吸引点击）
+2. **正文**（2-3段，用emoji标注重点，200-300字）
+${withTags ? '3. **#话题标签**（5-8个）' : ''}
 
-风格要求：真实分享感、可以用"姐妹们""家人们"等亲切称呼、重点内容用 emoji 标注、字数300-500字。`;
+要求：真实分享感，可用"姐妹们""家人们"等称呼，不要过多修饰词。`;
   },
 
   ecommerce: (_prompt, params) => {
