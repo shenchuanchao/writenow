@@ -30,13 +30,13 @@ function getOrCreateDeviceId(): string {
   return id;
 }
 
-export function ToolForm({ tool, initialPrompt, initialParams }: { tool: ToolConfig; initialPrompt?: string; initialParams?: Record<string, string> }) {
+export function ToolForm({ tool, initialPrompt, initialParams }: { tool: ToolConfig; initialPrompt?: string; initialParams?: Record<string, string | undefined> }) {
   const { result, loading, error, creditsRemaining, guestUnlimited, generate, reset } = useGenerate();
   const { credits } = useCredits();
   const { user, refreshProfile } = useAuth();
 
   const [prompt, setPrompt] = useState(initialPrompt || "");
-  const [params, setParams] = useState<Record<string, string>>(initialParams || {});
+  const [params, setParams] = useState<Record<string, string | undefined>>(initialParams || {});
   const [copied, setCopied] = useState(false);
   const [deviceId] = useState(() => getOrCreateDeviceId());
 
