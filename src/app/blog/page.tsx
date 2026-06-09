@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "文案创作指南 — 小红书/朋友圈/电商标题写作技巧 | WriteNow",
+  title: "文案创作指南 — 小红书/朋友圈/电商标题写作技巧",
   description: "WriteNow 博客：小红书文案怎么写、爆款标题公式、种草模板大全、朋友圈文案技巧、电商标题优化等AI写作干货。",
   keywords: ["文案写作", "小红书教程", "朋友圈文案技巧", "电商标题优化", "AI写作教程"],
   alternates: { canonical: "https://write.coderlog.net/blog" },
