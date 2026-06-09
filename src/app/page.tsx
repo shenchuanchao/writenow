@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ToolCard } from "@/components/tools/tool-card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { TOOL_CONFIGS } from "@/constants";
-import { ArrowRight, Sparkles, Zap, Shield, Gift, UserPlus, Crown, Heart, Infinity } from "lucide-react";
+import { getRecentPosts } from "@/data/blog-posts";
+import { ArrowRight, Sparkles, Zap, Shield, Gift, UserPlus, Crown, Heart, Infinity, Calendar } from "lucide-react";
 
 const STEPS = [
   { icon: Sparkles, title: "选风格", desc: "从种草笔记到测评开箱，选好你要的文案风格" },
@@ -21,6 +24,12 @@ const SECONDARY_TOOLS = [
   TOOL_CONFIGS.video_script,
   TOOL_CONFIGS.ecommerce,
 ];
+
+const BLOG_CATEGORY_COLORS: Record<string, string> = {
+  "小红书": "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+  "朋友圈": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  "电商": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+};
 
 export default function HomePage() {
   return (
@@ -162,8 +171,8 @@ export default function HomePage() {
       {/* ====== CTA ====== */}
       <section className="container mx-auto px-4 py-20 max-w-5xl text-center">
         <h2 className="text-3xl font-bold mb-4">开始生成你的第一条小红书文案</h2>
-        <p className="text-muted-foreground mb-3">每日 5 次免费，无需注册，打开即用</p>
-        <p className="text-xs text-muted-foreground/60 mb-8">注册解锁更多风格与无限制生成</p>
+        <p className="text-muted-foreground mb-3">免费无限次，无需注册，打开即用</p>
+        <p className="text-xs text-muted-foreground/60 mb-8">注册解锁更多风格 · 会员 9.9 元/月无限制</p>
         <div className="flex gap-4 justify-center flex-wrap">
           <Link href="/tools/xiaohongshu">
             <Button size="lg">
@@ -177,6 +186,58 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      {/* ====== Latest Articles ====== */}
+      <LatestArticles />
     </div>
+  );
+}
+
+function LatestArticles() {
+  const posts = getRecentPosts(3);
+  if (posts.length === 0) return null;
+
+  return (
+    <section className="bg-muted/30 py-20">
+      <div className="container mx-auto px-4 max-w-5xl">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">📝 文案创作指南</h2>
+            <p className="text-muted-foreground text-sm">最新的小红书、朋友圈、电商标题写作技巧</p>
+          </div>
+          <Link href="/blog" className="text-sm text-primary font-medium hover:underline flex items-center gap-1 flex-shrink-0">
+            查看全部 <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-5">
+          {posts.map((post) => (
+            <Link key={post.slug} href={`/blog/${post.slug}`}>
+              <Card className="h-full group cursor-pointer hover:border-primary/50 hover:shadow-md transition-all">
+                <CardContent className="p-5 flex flex-col h-full">
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <Badge className={`text-xs ${BLOG_CATEGORY_COLORS[post.category] || "bg-muted"}`}>
+                      {post.category}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {post.date}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3 flex-1">
+                    {post.description}
+                  </p>
+                  <span className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    阅读全文 →
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

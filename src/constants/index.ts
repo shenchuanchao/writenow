@@ -98,6 +98,7 @@ export const SITE_CONFIG = {
     { href: "/tools/xiaohongshu", label: "小红书" },
     { href: "/tools/moments", label: "朋友圈" },
     { href: "/templates", label: "热门模板" },
+    { href: "/blog", label: "创作指南" },
   ],
   moreTools: [
     { href: "/tools/video-script", label: "短视频脚本" },

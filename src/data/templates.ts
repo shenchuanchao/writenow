@@ -66,6 +66,33 @@ export const TEMPLATES: Template[] = [
     params: { tone: "casual", hashtags: "yes" },
     tags: ["穿搭", "通勤", "OOTD"],
   },
+  {
+    id: "xhs-bikeng",
+    title: "网红产品踩雷合集",
+    description: "避坑指南类内容，帮姐妹们省钱的真实吐槽",
+    toolType: "xiaohongshu",
+    prompt: "盘点我上半年跟风买过最后悔的5件网红产品，从美妆到家居都有，重点说为什么不值得买和替代推荐",
+    params: { tone: "warn", hashtags: "yes" },
+    tags: ["避坑", "踩雷", "劝退"],
+  },
+  {
+    id: "xhs-weekend-trip",
+    title: "周末周边游强烈安利",
+    description: "旅行攻略类，激情感召式种草目的地",
+    toolType: "xiaohongshu",
+    prompt: "求求姐妹们一定要去这个地方！距市区1小时车程的绝美小众景点，人少景美出片率超高，附交通住宿美食全攻略",
+    params: { tone: "enthusiastic", hashtags: "yes" },
+    tags: ["周末游", "周边", "攻略"],
+  },
+  {
+    id: "xhs-study-method",
+    title: "三个月逆袭上岸经验分享",
+    description: "学习方法类，讲真实经历引发共情",
+    toolType: "xiaohongshu",
+    prompt: "从学渣到考上心仪学校，分享我这三个月的高效学习方法和时间管理技巧，每天只学6小时但效率翻倍",
+    params: { tone: "story", hashtags: "yes" },
+    tags: ["学习", "经验", "逆袭"],
+  },
 
   // ==================== 短视频脚本 ====================
   {
