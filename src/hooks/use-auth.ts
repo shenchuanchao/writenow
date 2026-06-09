@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import type { Profile } from "@/types";
@@ -22,7 +22,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({ user: null, profile: null, loading: true });
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+  const mountedRef = useRef(true);
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -38,20 +39,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [state.user, fetchProfile]);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mountedRef.current) return;
       const user = session?.user ?? null;
       setState((prev) => ({ ...prev, user, loading: false }));
       if (user) fetchProfile(user.id);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mountedRef.current) return;
       const user = session?.user ?? null;
       setState((prev) => ({ ...prev, user }));
       if (user) fetchProfile(user.id);
       else setState((prev) => ({ ...prev, profile: null }));
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mountedRef.current = false;
+      subscription.unsubscribe();
+    };
   }, [fetchProfile]);
 
   const signIn = async (email: string, password: string) => {

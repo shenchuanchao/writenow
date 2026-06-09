@@ -6,9 +6,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { SITE_CONFIG } from "@/constants";
 import { Coins, LogOut, Menu, ShoppingBag, Shield, User, X, ChevronDown } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 
-export function Header() {
+export const Header = memo(function Header() {
   const { user, profile, signOut } = useAuth();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -197,4 +197,4 @@ export function Header() {
       )}
     </header>
   );
-}
+});
