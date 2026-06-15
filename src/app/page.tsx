@@ -75,7 +75,7 @@ export default function HomePage() {
                 <Heart className="h-8 w-8 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold mb-2">小红书文案</h3>
+                <h3 className="text-2xl font-bold mb-2">小红书AI文案</h3>
                 <p className="text-muted-foreground mb-4 leading-relaxed">
                   种草笔记、好物分享、测评开箱 — AI 量身定制，10 秒出高质量小红书文案
                 </p>
