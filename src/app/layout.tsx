@@ -11,8 +11,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://write.coderlog.net"),
-  title: { default: "小红书文案生成器_朋友圈文案_短视频脚本免费生成 | WriteNow", template: "%s | WriteNow" },
-  description: "免费无限次小红书文案AI生成器，支持种草笔记、好物分享、爆款标题一键生成。10秒出稿，无需注册，完全免费无广告。",
+  title: { default: "小红书AI文案生成器_朋友圈文案_短视频脚本免费生成 | WriteNow", template: "%s | WriteNow" },
+  description: "免费无限次小红书AI文案生成器，支持种草笔记、好物分享、爆款标题一键生成。10秒出稿，无需注册，完全免费无广告。",
   keywords: ["小红书文案生成", "朋友圈文案", "短视频脚本", "AI文案工具", "种草笔记", "好物分享", "免费文案生成器", "小红书AI写作", "电商标题生成"],
   authors: [{ name: "WriteNow" }],
   openGraph: {
