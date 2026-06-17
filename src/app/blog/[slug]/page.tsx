@@ -16,6 +16,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "小红书": "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
   "朋友圈": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   "电商": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  "AI文案": "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
 };
 
 export async function generateStaticParams() {
