@@ -17,6 +17,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   "朋友圈": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   "电商": "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
   "AI文案": "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+  "短视频": "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
 };
 
 export default function BlogPage() {
