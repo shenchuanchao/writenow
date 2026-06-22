@@ -9,7 +9,7 @@ import { ArrowRight, Sparkles, Zap, Shield, Gift, UserPlus, Crown, Heart, Infini
 
 const STEPS = [
   { icon: Sparkles, title: "选风格", desc: "从种草笔记到测评开箱，选好你要的文案风格" },
-  { icon: Zap, title: "写需求", desc: "描述你的产品或内容，AI 10 秒出高质量小红书文案" },
+  { icon: Zap, title: "写需求", desc: "描述你的产品或内容，AI 自动适配平台风格生成文案" },
   { icon: Shield, title: "拿文案", desc: "一键复制使用，每天免费生成，登录解锁更多风格" },
 ];
 
@@ -44,11 +44,19 @@ export default function HomePage() {
         </div>
 
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-          小红书文案一键生成，免费无广告
+          AI文案生成器 — 免费一键生成营销文案
         </h1>
-        <p className="text-lg text-muted-foreground mb-10">
-          种草笔记｜好物分享｜爆款文案，10 秒出稿
+        <p className="text-lg text-muted-foreground mb-8">
+          小红书种草 · 朋友圈配文 · 电商标题 · 短视频脚本 — 10 秒出稿，打开即用
         </p>
+
+        {/* Quick-access scene links */}
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-8 text-sm">
+          <a href="/tools/xiaohongshu" className="text-muted-foreground hover:text-rose-500 transition-colors">📕 小红书文案生成</a>
+          <a href="/tools/moments" className="text-muted-foreground hover:text-emerald-500 transition-colors">💬 朋友圈文案生成</a>
+          <a href="/tools/ecommerce" className="text-muted-foreground hover:text-orange-500 transition-colors">🛒 电商标题优化</a>
+          <a href="/tools/video-script" className="text-muted-foreground hover:text-amber-500 transition-colors">🎬 短视频脚本生成</a>
+        </div>
 
         <div className="flex gap-4 justify-center flex-wrap">
           <Link href="/tools/xiaohongshu">
@@ -134,9 +142,9 @@ export default function HomePage() {
       {/* ====== How It Works ====== */}
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-5xl">
-          <h2 className="text-2xl font-bold text-center mb-4">三步完成小红书文案创作</h2>
+          <h2 className="text-2xl font-bold text-center mb-4">三步创作营销文案</h2>
           <p className="text-center text-muted-foreground mb-12">
-            不用学排版、不用想标题，AI 帮你把点子变成高质量文案
+            不用学排版、不用想标题 — 告诉AI你要什么，10 秒出稿
           </p>
           <div className="grid sm:grid-cols-3 gap-8">
             {STEPS.map((step, i) => (
@@ -155,7 +163,7 @@ export default function HomePage() {
       {/* ====== Demo ====== */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto px-4 max-w-5xl">
-          <h2 className="text-2xl font-bold text-center mb-10">小红书文案生成效果</h2>
+          <h2 className="text-2xl font-bold text-center mb-10">AI文案生成效果预览</h2>
           <div className="space-y-3">
             <img
               src="/images/xiaohongshu-demo.png"
@@ -172,7 +180,7 @@ export default function HomePage() {
 
       {/* ====== CTA ====== */}
       <section className="container mx-auto px-4 py-20 max-w-5xl text-center">
-        <h2 className="text-3xl font-bold mb-4">开始生成你的第一条小红书文案</h2>
+        <h2 className="text-3xl font-bold mb-4">开始用 AI 生成你的第一条文案</h2>
         <p className="text-muted-foreground mb-3">免费无限次，无需注册，打开即用</p>
         <p className="text-xs text-muted-foreground/60 mb-8">注册解锁更多风格 · 会员 9.9 元/月无限制</p>
         <div className="flex gap-4 justify-center flex-wrap">
@@ -204,7 +212,7 @@ function LatestArticles() {
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold mb-2">📝 文案创作指南</h2>
-            <p className="text-muted-foreground text-sm">最新的小红书、朋友圈、电商标题写作技巧</p>
+            <p className="text-muted-foreground text-sm">最新的AI文案写作技巧与教程</p>
           </div>
           <Link href="/blog" className="text-sm text-primary font-medium hover:underline flex items-center gap-1 flex-shrink-0">
             查看全部 <ArrowRight className="h-3.5 w-3.5" />
