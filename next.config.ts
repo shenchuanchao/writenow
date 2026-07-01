@@ -3,10 +3,10 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV === "development";
 
 const CSP_PROD =
-  "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co https://open.bigmodel.cn; font-src 'self' data:;";
+  "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.clarity.ms; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co https://open.bigmodel.cn https://www.clarity.ms; font-src 'self' data:;";
 
 const CSP_DEV =
-  "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co https://open.bigmodel.cn http://192.168.2.56:* ws://192.168.2.56:*; font-src 'self' data:;";
+  "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.clarity.ms; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co https://open.bigmodel.cn https://www.clarity.ms http://192.168.2.56:* ws://192.168.2.56:*; font-src 'self' data:;";
 
 const nextConfig: NextConfig = {
   output: "standalone",
