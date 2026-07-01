@@ -6,6 +6,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { FeedbackButton } from "@/components/feedback/feedback-button";
+import { ClarityAnalytics } from "@/components/analytics/clarity";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -104,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Footer />
             </div>
             <FeedbackButton />
+            <ClarityAnalytics />
           </AuthProvider>
         </ThemeProvider>
         <script
