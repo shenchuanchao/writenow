@@ -110,8 +110,8 @@ export function Footer() {
         </div>
         <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} {SITE_CONFIG.name}. All rights reserved. 
-          <a href="https://www.coderlog.net" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-            .NET技术博客
+          <a href="https://www.coderlog.net/about" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+            小程序、网站、H5网页、APP定制开发找我
           </a>
         </div>
       </div>
